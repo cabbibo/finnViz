@@ -69,6 +69,17 @@ float triNoise3D(float3 p,  float spd)
 }
 
 
+float sdBox( float3 p, float3 b )
+{
+  float3 q = abs(p) - b;
+  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+}
+
+float sdPlane( float3 p, float3 n, float h )
+{
+  // n must be normalized
+  return dot(p,n) + h;
+}
 float _IntersectionPrecision = .01;
 
 int _NumberSteps = 100;
@@ -89,7 +100,7 @@ float sdCylinderZ( float3 p, float3 c )
 {
   return length(p.xz-c.xy)-c.z;
 }
-
+float opS( float d1, float d2 ) { return max(-d1,d2); }
 
 
 // ROTATION FUNCTIONS TAKEN FROM
@@ -135,31 +146,43 @@ float GetDist(float3 p) {
 
 
     float2 uv = p.xz;
-    
-    uv.x = abs(uv.x) -.1;
 
-    uv.y = abs(uv.y) - 1;
+    float2 tmpUV = uv;
+
+    float d = 1000;
     float time = 12. + _Time.y; // 0.3 * h21(floor(10. * uv))  //<-very cool extremely laggy
+    for( int b = 0; b < 5; b++ ){
+    
+    uv = tmpUV;
+
+    //uv.x = abs(uv.x) -.1;
+    uv.x -= sin(  p.y*(2+sin(float(b) *20)) * .6  +(float(b)*100) + time ) - sin(float(b) * 202)*2 - .5;// (sin(float(b)+1.3) * .5 + float(b) * 10) * (sin(float(b) + 131) + time) *4 -.5;
+
+
+    //uv.y = abs(uv.y) - 1;
     float2 q = float2(1,0);
     
-    float th = .01 * p.y - 0.6 * time;
-    float n = 9.;
-    float m = -0.0 * length(uv) + 1.8;
+    float th = .1 * p.y - 0.6 * time;
+    float n = 6.;
+    float m = -0.0 * length(uv)+.5;// +1.5*(sin(_Time.y*.67+230) + 1.1) ;
     for (float i = 0.; i < n; i++) { 
         uv -= m * q;
-        th += 0.5 * p.y + 0.05 * time;
+        th += 0.5 * p.y *   (sin(_Time.y*.84+20) + 1.1) + 0.05 * time;
         uv = mul(Rot(th) ,uv);
-        uv.x = abs(uv.x)-   .1;
-        m *= 0.01 * cos(8. * length(uv)) +  0.4;// + 0.05 * cos(0.4 * p.y - 0.6 * _Time.y);
+        uv.x = abs(uv.x)-   .1 * 0;
+        m *= 0.06 * (sin(_Time.y*.74+100) + 1.1) * cos(8. * length(uv)) +  0.2 * (sin(_Time.y * .37) + 1.1);// + 0.05 * cos(0.4 * p.y - 0.6 * _Time.y);
     
         //m += m * cos(_Time.y);
     }
     
-    float d = length(uv) - 1. * m;
+     d = min(d,length(uv) - 1. * m);
 
+    //d = length(uv) - 1. * m;
     //d += s.w * .1;
     
     //float d = length(uv)- 0.5;
+
+    }
     
     return .3  * d;
 }
@@ -192,7 +215,14 @@ float2 map( float3 pos ){
     uv2 = clamp(uv2,0,1);
 
     float4 s = tex2D(_MainTex, uv2.xy );
-float2 logo = float2((1-s.w) -.5 + clamp(abs(pos.z)-1,0,10)  ,2);
+float2 logo = float2((1-s.w) -.01  ,2);
+
+logo.x = opS(  sdPlane( pos, float3(0,0,1) ,.2),logo.x );
+logo.x = opS(  sdPlane( pos, float3(0,0,-1) ,.2),logo.x );
+logo.x += triNoise3D(pos * .2 ,1) * .8;// *(sin(_Time.y*.87+440) + 1.1);
+
+
+
  d = smoothU( float2(d.x,1) , logo , .6);//min(d , 1-s.w );
 
 
@@ -222,15 +252,15 @@ for( int i =0; i < 4; i++ ){
 
 float2 calcIntersection( float3 ro ,  float3 rd ){     
             
-               
-    float h =  .001  * 2;
+    float ip = .006 * (1.1+sin(_Time.y));
+    float h =  ip  * 2;
     float t = 0.0;
     float res = -1.0;
     float id = -1.0;
 
     for( int i = 0; i< 100; i++ ){
         
-        if( h < .001 || t >30) break;
+        if( h < ip || t >30) break;
 
         float3 pos = ro + rd*t;
         float2 m = map( pos );

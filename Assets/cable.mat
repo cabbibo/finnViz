@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: cable
-  m_Shader: {fileID: 4800000, guid: 42925db058288a94bb3693d675034f68, type: 3}
+  m_Shader: {fileID: 4800000, guid: 10c8e84f7b2ea0e41947d1c9ab4dd667, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
