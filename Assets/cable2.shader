@@ -160,7 +160,7 @@ float GetDist(float3 p) {
 
     float calmness =( sin(time * .1) +1)/2;
 
-    calmness = 1;
+    //calmness = 1;
 
     // MAKE SURE THIS RATIO IS EXACT
     float2 uv2 = (p.xy * float2(1 , 2)) * .2+ .5;
@@ -191,22 +191,22 @@ float GetDist(float3 p) {
     float tNoise1 =    triNoise3D( float3(p.y * .01,cid*10,0) ,1 ); 
     //uv.x = abs(uv.x) -.1;
    // uv.x -= sin(cid + time * .1 *(sin( cid * 100 ) + 3))*(tNoise1 * 3-2) + sin(  p.y*(2+sin(float(b) *20)) * .6  +(float(b)*100) + time ) - sin(float(b) * 202)*2 - .5;// (sin(float(b)+1.3) * .5 + float(b) * 10) * (sin(float(b) + 131) + time) *4 -.5;
-    uv.x -= noise(p.y  * (.04 * (cid+4)) + cid*100 + time * .1)  * 2 -1;//
-    uv.x -= noise(p.y  * (.2 * (cid+4)) + cid*100 + time * .1)  * .3 -.1;//
-    uv.x -= noise(p.y  * (.03 * (cid+4)) + cid*100 + time * .1)  * 8 -6;//
+    uv.x -= sin(time * .2  + cid ) *(noise(p.y  * (.04 * (cid+4)) + cid*100 + time * .1)  * 2 -1);//
+    uv.x -= sin(time * .1  + cid ) *(noise(p.y  * (.2 * (cid+4)) + cid*100 + time * .1)  * .3 -.1);//
+    uv.x -= sin(time * .3  + cid ) *(noise(p.y  * (.03 * (cid+4)) + cid*100 + time * .1)  * 8 -5);//
 
     //uv.y = abs(uv.y) - 1;
     float2 q = float2(1,0);
     
     float th = .4 * sin(cid*20) * p.y - .6 * time;
-    float n = 8.;
+    float n = 2.;
     float m = 0 * length(uv)+1.8;// +1.5*(sin(_Time.y*.67+230) + 1.1) ;
     
-    for (float i = 0.; i < n; i++) { 
+    for (float i = 0.; i < 8; i++) { 
         float fn =  float(i);
 
         uv -= m * q;
-        th += 0.5 * p.y *   (sin(time*.1+fn+20) + 1.1) + ( (calmness * .5 + .3) * time);
+        th += 0.5 * p.y *   (sin(time*.1+fn+20) + 1.1) + ( ( .5 + .3) * time);
         uv = mul(Rot(th) ,uv);
         uv.x = abs(uv.x * 1)-.1*calmness;//-.1 * 1*(sin(uv.y*4));
         m *=.05*cos(8. * length(uv)) + (sin(time * .1 + cid) * .25 * calmness + .25 * calmness + .04 );//.55;// +  0.2 * (sin(time * .1 + fn) + 1.1);// + 0.05 * cos(0.4 * p.y - 0.6 * _Time.y);
@@ -262,33 +262,31 @@ float2 map( float3 pos ){
  float2 d = float2(100000,-1000);
 
  d.x = GetDist(pos);
-    float2 uv2 = (pos.yx * float2(1 , 16./9.)) * .2+ .5;
+    float2 uv2 = (pos.yx * float2(1 , 2)) * .1+ .5;
     uv2 = clamp(uv2,0,1);
 
-    /*float4 s = tex2D(_MainTex, uv2.xy );
-float2 logo = float2((1-s.w) -.01  ,2);
+    float4 s = tex2Dlod(_MainTex, float4(uv2.xy,0,0) );
+float2 logo = float2((1-s.w) * 1  -.1 ,2);
 
-logo.x = opS(  sdPlane( pos, float3(0,0,1) ,.2),logo.x );
-logo.x = opS(  sdPlane( pos, float3(0,0,-1) ,.2),logo.x );
-logo.x += triNoise3D(pos * .2 ,1) * .8;// *(sin(_Time.y*.87+440) + 1.1);
-*/
+logo.x = opS(  sdPlane( pos +float3(0,0,1), float3(0,0,1) ,.2),logo.x );
+logo.x = opS(  sdPlane( pos+float3(0,0,1), float3(0,0,-1) ,.2),logo.x );
+logo -= (triNoise3D(pos * .2 ,1)+sin(_Time.y * .1)-.5) * .2  * float2(1,3);// *(sin(_Time.y*.87+440) + 1.1);
+if( logo.x <0 ){
+   // logo.x = -100;
+    
+}
 
 
- d = float2(d.x,1);
- //d=smoothU( float2(d.x,1) , logo , .6);//min(d , 1-s.w );
+
+//d = logo;
+ d = float2(d.x,0);
+ d=smoothU( float2(d.x,.1) , logo ,.5);//min(d , 1-s.w );
 
 
 
     float3 p = pos;
         //p.yz = ((p.yz+1)%2)-1; 
 
-for( int i =0; i < 4; i++ ){
-
-
-    p = abs(p);
-
-//p = mul( xrotate(p.x) , pos );
-}
 
 
       //  d = min(d,sdCylinderZ( p , float3(0,0,.1)));
@@ -304,15 +302,15 @@ for( int i =0; i < 4; i++ ){
 
 float2 calcIntersection( float3 ro ,  float3 rd ){     
             
-    float ip = .001;//* (1.1+sin(_Time.y));
-    float h =  ip  * 2;
+    float ip = .000001;//* (1.1+sin(_Time.y));
+    float h =  ip  * 4;
     float t = 0.0;
     float res = -1.0;
     float id = -1.0;
 
-    for( int i = 0; i< 100; i++ ){
+    for( int i = 0; i< 180; i++ ){
         
-        if( h < ip || t >60) break;
+        if( h < ip || t >20) break;
 
         float3 pos = ro + rd*t;
         float2 m = map( pos );
@@ -324,8 +322,8 @@ float2 calcIntersection( float3 ro ,  float3 rd ){
     }
 
 
-    if( t <  60 ){ res = t; }
-    if( t >  60){ id = -1.0; }
+    if( t <  20 ){ res = t; }
+    if( t >=  20){ id = -1.0; }
 
     return float2( res , id );
   
@@ -336,7 +334,7 @@ float3 calcNormal( in float3 pos ){
 
         float3 eps = float3( 0.01, 0.0, 0.0 );
         float3 nor = float3(
-            map(pos+eps.xyy).x - map(pos-eps.xyy).x,
+            map(pos+eps.xyy).x - map(pos).x,
             map(pos+eps.yxy).x - map(pos-eps.yxy).x,
             map(pos+eps.yyx).x - map(pos-eps.yyx).x );
         return normalize(nor);
@@ -359,14 +357,18 @@ float3 render( float3 ro , float3 rd ){
         col *= 1-dot( -rd, nor);
 
 
-                float2 uv2 = (fPos.xy * float2(1 , 16./9.)) * .2+ .5;
+                float2 uv2 = (fPos.xy * float2(1 , 2)) * .1+ .5;
     uv2 = clamp(uv2,0,1);
 
     float4 s = tex2D(_MainTex, uv2.xy );
 
     float3 col2 = s.xyz;
 
-    col = lerp( col , col2 , res.y-1);
+    col = lerp( col , col2 , saturate(res.y-1));
+    if( res.y < 1 ){
+      //  col = 0;
+    }
+
         //col = calcNormal( fPos ) * .5 + .5;
     }
     //col = 1;

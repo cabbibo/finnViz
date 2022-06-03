@@ -94,7 +94,14 @@ float noise (in float3 x)
 }
 
 
+float sdBox( float3 p, float3 b ){
 
+  float3 d = abs(p) - b;
+
+  return min(max(d.x,max(d.y,d.z)),0.0) +
+         length(max(d,0.0));
+
+}
 
 float fbm(float3 p)
 {
@@ -294,6 +301,39 @@ float map3(float3 p)
 }
 
 
+float doLogo( float3 p ){
+
+    float v = 100000;
+
+    p *= 3;
+    p.x = abs(p.x);
+    //p.x = abs(p.x+.4);
+    float3 tp = p - float3(.85,0,0);
+
+    //tp.x = abs(tp.x);
+    v = min(v,sdBox( tp , float3(.03,.3,.3)));
+    v = min(v,sdBox( tp - float3(-.4,-.15,0) , float3(.4,.15,.3)));
+
+    return v;
+}
+
+float doLogoLong( float3 p ){
+
+    float v = 100000;
+
+    p *= 3;
+    p.x = abs(p.x);
+    //p.x = abs(p.x+.4);
+    float3 tp = p - float3(.85,0,0);
+
+    //tp.x = abs(tp.x);
+    v = min(v,sdBox( tp , float3(.03,.3,2.3)));
+    v = min(v,sdBox( tp - float3(-.4,-.15,0) , float3(.4,.15,1.3)));
+
+    return v;
+}
+
+
 float3 getColor( float3 fPos ){
     
     float m = map( fPos );
@@ -305,11 +345,12 @@ float3 getColor( float3 fPos ){
 float3 color = 0;
     
 
-
+    float logo = doLogo(fPos);
 
     m = opOnion(m,.01);
+   // m = max(m, -(doLogoLong(fPos)-.2));
     if( m < 0 ){
-      color +=.2 * float3(1.,.5,.2);//float3(.1,0,0);////.1/((-m)*20);//.03;
+      color +=.1 * float3(.1,.5,0);//float3(.1,0,0);////.1/((-m)*20);//.03;
     }
     m = map3(fPos);
      m = opOnion(m,.01);
@@ -318,13 +359,32 @@ float3 color = 0;
     }
     if( inside < 0 ){
 
+        float outL = logo - triNoise3D(fPos*1,1)*.2;
         float m2 = map2(fPos);
         m2 = opOnion(m2,.01);
 
+        float tm = m2;
+
+        m2 = smin(m2, opOnion(outL,.1) * 10 , 1);
+        float d =  max( tm , -outL);
+
+        float d2 = m2 - d; 
+
+
+        
+        m2 = max( m2 , -(doLogo(fPos)) );
+
+
         if( m2 < 0 ){
-            color += .5 *float3(.2,.2,0.);//float3(.05,.02,0);
+            color += .1 *float3(-d2 * 0,d2 * 1+ .4,0);//float3(.05,.02,0);
         }
 
+    }
+
+    m = doLogo( fPos );
+
+    if( m < 0 ){
+       color += .1*float3(1.3,1.,0.);
     }
 
     return color;
@@ -365,7 +425,9 @@ if( c.x < .8 ){
     }
     //tv += saturate( .1- .2*abs(fPos.z));
 }
-ave += 30*tv*float3(1,.8,.3);
+
+
+//ave += 30*tv*float3(1,.8,.3);
 
     float3 eps = float3(.001,0,0) * 10*abs( fPos.z );
 
@@ -373,7 +435,9 @@ ave += 30*tv*float3(1,.8,.3);
     float Directions = 4;
     float Quality = 1;
 
-    float d = abs(fPos.z- sin(_Time.y) * .3 );
+
+
+    float d = 0;//abs(fPos.z- sin(_Time.y *.1 ) * .3 );
 
     float Radius = 0;
 
@@ -382,22 +446,52 @@ ave += 30*tv*float3(1,.8,.3);
     }
 
 
-    for( float d=0.0; d<3.14159; d+=3.14159/6)
-    {
-		for(float i=1.0/1; i<=1.0; i+=1.0/6)
-        {
-			ave +=  getColor(fPos+float3(cos(d),sin(d),0)*Radius*i);		
-			ave +=  getColor(fPos+float3(cos(d),sin(d),0)*-Radius*i);		
-        }
-    }
+    Radius *= .8;
+
+/*
+
+            float a = 3.14159;
+            float r = 0;
+
+            a = 3.14159;
+            r = 1 * Radius; 
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*r);		
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*-r);		
+            
+            a = 3.14159/5;
+            r = 1 * Radius; 
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*r);		
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*-r);		
+
+            a = 3.14159*2/5;
+            r = 1 * Radius; 
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*r);		
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*-r);		
+
+            
+            a = 3.14159*3/5;
+            r = 1 * Radius; 
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*r);		
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*-r);	
+
+            
+            a = 3.14159*4/5;
+            r = 1 * Radius; 
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*r);		
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*-r);		
+
+
+
+
+   
 
    //color /= 2;//Directions * Quality;
 
-   ave /= 36;
-   color += ave;
+   ave /= 11;*/
+   color += ave; 
 }
 
-color /= 2;
+//color /= 2;
 
 return color;
 }
