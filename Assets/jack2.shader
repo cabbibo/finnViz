@@ -309,12 +309,12 @@ float3 color = 0;
 
     m = opOnion(m,.01);
     if( m < 0 ){
-      color +=.1;//float3(.1,0,0);////.1/((-m)*20);//.03;
+      color +=.2 * float3(1.,.5,.2);//float3(.1,0,0);////.1/((-m)*20);//.03;
     }
     m = map3(fPos);
      m = opOnion(m,.01);
     if( m < 0 ){
-      color +=.1;//float3(.1,0,0);////.1/((-m)*20);//.03;
+      color +=.1 * float3(.1,0,.2);//float3(.1,0,0);////.1/((-m)*20);//.03;
     }
     if( inside < 0 ){
 
@@ -322,7 +322,7 @@ float3 color = 0;
         m2 = opOnion(m2,.01);
 
         if( m2 < 0 ){
-            color += .1;//float3(.05,.02,0);
+            color += .5 *float3(.2,.2,0.);//float3(.05,.02,0);
         }
 
     }
@@ -332,13 +332,13 @@ float3 color = 0;
 float3 render( float3 ro , float3 rd ){
 
 
-float3 color = 0;
+float3 color = float3(.1,0,.3);
 
-for( int i = 0; i< 50; i ++ ){
+for( int i = 0; i< 100; i ++ ){
     float fi = float(i);
 
     fi += (hash(ro.x +_Time.y) + hash(ro.y + _Time.y * 1.3))/2;//(hash(ro.x * 10000) + hash(ro.y*10000))/2;
-    float3 fPos = ro + fi * .02 * rd;
+    float3 fPos = ro + fi * .01 * rd;
 
 //fPos += 100;
   //  fPos = (fPos % 2)-1;
@@ -351,6 +351,21 @@ for( int i = 0; i< 50; i ++ ){
     //color += -worleyFbm( fPos*100,1 )*.000001;
 
 float3 ave = getColor( fPos );
+
+float2 uv = fPos.xy * float2(.5,1) + .5;
+
+float4 c = tex2D(_MainTex,uv);
+
+
+float tv = 0;
+if( c.x < .8 ){
+
+    if( abs(fPos.z) < .2 ){
+        tv += .1;//
+    }
+    //tv += saturate( .1- .2*abs(fPos.z));
+}
+ave += 30*tv*float3(1,.8,.3);
 
     float3 eps = float3(.001,0,0) * 10*abs( fPos.z );
 
@@ -381,6 +396,8 @@ float3 ave = getColor( fPos );
    ave /= 36;
    color += ave;
 }
+
+color /= 2;
 
 return color;
 }

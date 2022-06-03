@@ -164,13 +164,13 @@ float sdCylinder( float3 p, float2 h )
 float2 cable(float3 pos) {
 	const int iterations = 2;
     
-    pos *= 3;
+    pos *= 10;
 
   //  pos.x += 2*sin(pos.y * .1);
     float y = pos.y;
     //pos.z -= 0.5;
-    pos.z = abs(pos.z);
-    pos.y = (pos.y% 1.) - .5;
+   // pos.z = abs(pos.z);
+    //pos.y = (pos.y% 1.) - .5;
     float2 dist = float2(10., 0.);
     
     float startIterations = 4.;
@@ -197,11 +197,11 @@ float2 cable(float3 pos) {
 
 float GetDist(float3 p) {
 
-   float2 uv2 = (p.xy * float2(1 , 16./9.)) * .2+ .5;
+  /* float2 uv2 = (p.xy * float2(1 , 16./9.)) * .2+ .5;
     uv2 = clamp(uv2,0,1);
 
-    float4 s = tex2D(_MainTex, uv2.xy );
-
+  //  float4 s = tex2D(_MainTex, uv2.xy );
+*/
 
     float2 uv = p.xz;
 
@@ -223,7 +223,7 @@ float GetDist(float3 p) {
         uv = mul(Rot(th) ,uv);
         uv.x = abs(uv.x)-   .01;
         m *= 0.3 * cos(8. * length(uv)) +  .1;// + 0.05 * cos(0.4 * p.y - 0.6 * _Time.y);
-        m *= triNoise3D( float3(uv.y,0,0) ,1) + 1;
+    //    m *= triNoise3D( float3(uv.y,0,0) ,1) + 1;
         //m += m * cos(_Time.y);
     }
     
@@ -255,7 +255,7 @@ float2 map( float3 pos ){
     float3 ogPos = pos;
 
     //pos.z += 1;
-    pos.x = (pos.x+1000 + 1*sin( pos.y * .3)) % 1 - .5;
+    //pos.x = (pos.x+1000 + 1*sin( pos.y * .3)) % 1 - .5;
 
     //pos.y += floor( (pos.x+1.5) /3 ) * 3;
 
@@ -270,10 +270,10 @@ float2 map( float3 pos ){
     float2 uv2 = (ogPos.yx * float2(1 , 16./9.)) * .2+ .5;
     uv2 = clamp(uv2,0,1);
 
-    float4 s = tex2D(_MainTex, uv2.xy );
+  /*  float4 s = tex2D(_MainTex, uv2.xy );
 float2 logo = float2((1-s.w) -.5 + clamp(abs(pos.z)-.1,0,10)  ,2);
  d = smoothU( float2(d.x,1) , logo , .7 + (1-abs(pos.y * .2)));//min(d , 1-s.w );
-
+*/
 
 
     float3 p = pos;
@@ -282,7 +282,7 @@ float2 logo = float2((1-s.w) -.5 + clamp(abs(pos.z)-.1,0,10)  ,2);
 for( int i =0; i < 4; i++ ){
 
 
-    p = abs(p);
+   // p = abs(p);
 
 //p = mul( xrotate(p.x) , pos );
 }
