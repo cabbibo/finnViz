@@ -16,7 +16,8 @@
             #pragma fragment frag
             // make fog work
             #pragma multi_compile_fog
-
+#pragma exclude_renderers d3d11_9x
+#pragma exclude_renderers d3d9
             #include "UnityCG.cginc"
 
             struct appdata
@@ -108,10 +109,13 @@ float fbm2( float3 p ){
 
     p *= .01;
     p += 102.4141;
-    float f = triNoise3D(p,1);//p = mul(m,p*2.02);
+    p += float3(0,314 ,0 );//102.4141;
+    
+    float f = 0;//sin( p.x * 40) * 1;//fbm(p *.3) * 1;
+    f += triNoise3D(p,1);//p = mul(m,p*2.02);
     f += triNoise3D(p * 2 , 1 ) * .5;
     f += triNoise3D( p * 4 , 1 ) * .25;
-    return f / 2;
+    return f / 1.4;
 }
 
 
@@ -123,13 +127,14 @@ float GetDensity( float3 p ){
 
 float scene(float3 p)
 {	
-	float d= .1-length(p)*.05+fbm2(p*1);
-	 d += .1-length(p-float3(4,0,0))*.05+fbm2(p*1);
-	 d += .1-length(p-float3(-6,0,0))*.05+fbm2(p*1);
+	float d= .1-length(p)*.05+fbm2(p*1 + 4.3 );
+    p += d;
+	 d += .1-length(p-float3(4,0,0))*.05+fbm2(p*1 +433+ p.x * .3 + 10);
+	 d += .1-length(p-float3(-6,0,0))*.05+fbm2(p*1 + 33);
 
     //d *= d * d * d * 10;
 
-    d = clamp(d,-10,10);//saturate(d);
+    //d = clamp(d,-10,10);//saturate(d);
 
     return d;
 }
@@ -188,7 +193,6 @@ float3 color = float4(0,0,0,0);
 	float3 sun_direction = normalize( float3(1.,.0,.0) );
     
 
-
     	for(int i=0; i<nbSample; i++)
 	{
 
@@ -220,12 +224,23 @@ float3 color = float4(0,0,0,0);
 
 			
 			//Add ambiant + light scattering color
-			color += 1*50.*tmp*T +  float4(1.,.7,.4,1.)*80.*tmp*T*Tl;
+   float2 uv2 = (p.xy * float2(1 , 16./9.)) * .2+ .5;
+    uv2 = clamp(uv2,0,1);
+
+ //   float4 s = tex2D(_MainTex, uv2.xy );
+
+            float3 cloudLight = 1*50.*tmp*T +  float3(1.,1,1)*80.*tmp*T*Tl;
+	//		color.xyz += s.xyz * s.w * cloudLight * cloudLight * cloudLight * 600;	
+    	color.xyz +=  cloudLight * cloudLight * cloudLight * 600;
+
+
+    //color += 
+
 
             //color += 10000*float4(1,.2,0,1) * tmp *T/ (internalLight * internalLight * 10);
 
-            color +=10000* float4(1,.2,0,1) * tmp *T*.1/(.1+saturate(light)*saturate(light)*saturate(light)*40 );//lightning
- 
+            color +=100 * float4(1,.2,0,1) * tmp *T*.1/(.001+10000000*saturate(light)*saturate(light) *saturate(light)*saturate(light));//lightning
+    
             
             
             /*if( light < .1 ){
@@ -251,6 +266,7 @@ float3 color = float4(0,0,0,0);
 		p += rd*step;
 	}    
 
+    //color.xyz = (color.xyz - 0.3) *5 + .5;
     return color.xyz;
 }
 
