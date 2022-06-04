@@ -176,6 +176,8 @@ float NebulaNoise(float3 p)
     return final;
 }
 
+float cycleTime;
+
 
 float GetDensity( float3 p ){
 
@@ -236,6 +238,10 @@ float map(float3 p)
                sin( _Time.y * sin(fi+42) + fi+2466) * .2,
                sin( _Time.y * sin(fi+24) + fi+542) * .1
             );
+
+            offset *= cycleTime;
+            radius *= cycleTime;
+            radius *= cycleTime;
             d1 = smin( d1,length(p-offset)-radius ,15);
             //d1 = min( d1,length(p-offset)-radius);
         }
@@ -262,6 +268,10 @@ float map2(float3 p)
                sin( _Time.y * sin(fi+42) + fi+2466) * .4,
                sin( _Time.y * sin(fi+24) + fi+542) * .1
             );
+
+            offset *= cycleTime;
+            radius *= cycleTime;
+            radius *= cycleTime;
             d1 = smin( d1,length(p-offset)-radius ,30);
             //d1 = min( d1,length(p-offset)-radius);
         }
@@ -289,6 +299,10 @@ float map3(float3 p)
                sin( _Time.y * .2* sin(fi+42) + fi+2466) * 1,
                sin( _Time.y * .2 * sin(fi+24) + fi+542) * 1
             );
+
+            offset *= cycleTime;
+            radius *= cycleTime;
+            radius *= cycleTime;
             //d1 = smin( d1,length(p-offset)-radius ,15);
             d1 = min( d1,length(p-offset)-radius);
         }
@@ -305,14 +319,28 @@ float doLogo( float3 p ){
 
     float v = 100000;
 
+
+    float me = (cycleTime - .9) *(1/.1);
+
     p *= 3;
     p.x = abs(p.x);
     //p.x = abs(p.x+.4);
-    float3 tp = p - float3(.85,0,0);
+    float3 tp = p - float3(1*me + .06 * sin(_Time.y * .37 ) + .04 * sin(_Time.y * .27 )   ,0,0);
 
     //tp.x = abs(tp.x);
     v = min(v,sdBox( tp , float3(.03,.3,.3)));
     v = min(v,sdBox( tp - float3(-.4,-.15,0) , float3(.4,.15,.3)));
+
+
+float n = (noise(p * 5+ float3(0,0,-_Time.y))-.5) * .3  * cycleTime * (sin(_Time.y*.39)+1.2);
+      n += (noise(p * 10+ float3(0,0,-2*_Time.y))-.5) * .15  * cycleTime * (sin(_Time.y * .59)+1.2);
+
+
+    float notMax = 1-cycleTime;
+    notMax *= 10;
+
+      v += n * (cycleTime) * saturate(sin( _Time.y * .21) + .5) + n * notMax;
+
 
     return v;
 }
@@ -391,6 +419,14 @@ float3 color = 0;
 }
 float3 render( float3 ro , float3 rd ){
 
+    cycleTime = _Time.y * .01 % 3;
+    if( cycleTime > 1 && cycleTime < 2 ){
+        cycleTime = 1;
+    }else if( cycleTime >= 2 ){
+        cycleTime = pow( 3- cycleTime,.5);
+    }
+
+//cycleTime = 1;
 
 float3 color = float3(.1,0,.3);
 
@@ -437,7 +473,7 @@ if( c.x < .8 ){
 
 
 
-    float d = 0;//abs(fPos.z- sin(_Time.y *.1 ) * .3 );
+    float d = abs(fPos.z- saturate( sin(_Time.y *.1 ) * .6 + sin( _Time.y * .17 ) * .7)  );
 
     float Radius = 0;
 
@@ -448,7 +484,7 @@ if( c.x < .8 ){
 
     Radius *= .8;
 
-/*
+
 
             float a = 3.14159;
             float r = 0;
@@ -487,7 +523,7 @@ if( c.x < .8 ){
 
    //color /= 2;//Directions * Quality;
 
-   ave /= 11;*/
+   ave /= 11;
    color += ave; 
 }
 

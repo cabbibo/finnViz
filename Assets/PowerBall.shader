@@ -1,4 +1,4 @@
-﻿Shader "Unlit/lightning"
+﻿Shader "Unlit/Powerball"
 {
     Properties
     {
@@ -72,10 +72,10 @@ float3 render( float3 ro , float3 rd ){
 
 
 float3 col = float3(0,0,0);
-    for( int i = 0; i < 60; i++ ){
+    for( int i = 0; i < 100; i++ ){
 
         float fi = float(i);
-        float3 pos = ro + rd * fi * .001;// lerp( .004 , .001 , (1 +sin(_Time.y * .1  + 424) ) /2 ); 
+        float3 pos = ro + rd * fi *  .001;//lerp( .003 , .001 , (1 +sin(_Time.y * .1  + 424) ) /2 ); 
 
    // float y = pos.y + .5;
 
@@ -91,11 +91,16 @@ float3 col = float3(0,0,0);
   //  )
 
 
-    pos.xy +=  normalize(float2(nX,nY)) * tCol.w * .3;
+    pos.xy -=  normalize(float2(nX,nY)) * tCol.w * .1;
 
     
     if( tCol.w < .9999 ){ tCol.w=0;}else{
-        if( length(tCol) > 0 && i >0){
+        if( length(tCol) > 0 && i >9999){
+            col += tCol.xyz;
+            break;
+        }
+
+          if( length(tCol) > 0 && i == 0){
             col += tCol.xyz;
             break;
         }
@@ -103,7 +108,7 @@ float3 col = float3(0,0,0);
     //break;
     }
     //col += lerp(0, .1, pow((sin(_Time.y * .3) + 1) /2 ,2))*tCol.xyz * tCol.w;
-    col += .01*tCol.xyz * tCol.w;
+    //col +=.01*tCol.xyz * tCol.w;
 
 
         float y = pos.y + .5;// + sin(_Time.y) * .2 +.5;
@@ -111,35 +116,17 @@ float3 col = float3(0,0,0);
     //if( tCol.w < .999 ){ col= 0;}
 
     
+    float noiseVal =  triNoise3D( pos * 1 + (fi) + float3(11,1,1), 1.  ) ;//sin( uv.x * 40. + iTime) * .1 + fract( uv.x * 30. * sin(iTime)  - iTime) * .1; 
     
-    y +=  triNoise3D( pos * .3, 1. + 2. * sin(fi * 1430)) * .3;//sin( uv.x * 40. + iTime) * .1 + fract( uv.x * 30. * sin(iTime)  - iTime) * .1; 
-    y +=  triNoise3D( pos * .8, 2. +7. * sin(fi * 155430.)) * .2;//sin( uv.x * 40. + iTime) * .1 + fract( uv.x * 30. * sin(iTime)  - iTime) * .1; 
+   // noiseVal -= tCol.w * .1;
 
-   y = abs(y - .6 + sin( fi* 100.) * .3  * (.5-1*abs(pos.x)));
-    
-    y = .5 -y;
-    
-    y *= 60.;
-    y -= 29.9;
-    
+   if( noiseVal >.3 && noiseVal < .33){
 
-    
-    y = clamp(y*100.,0.,1.);
-    
-    
-    if( i == 19 ){
-    
-        if( y > 0 ){
-        col = y * .5 * float3(1. , .4 , 0.);
-        }
-    }else{
-    
-    //col += y;
-    
-        col+= y * .5 * float3(1. , .4 , 0.);
-        //}
-    }
-    
+      
+       
+       col = pow((sin(1*(fi * .4))+1)/2,50)  * (.015 - abs(noiseVal-.315)) * 100;// * noiseVal;// float3(1,.5,0) * saturate( ((noiseVal -.5)) * 10);
+       break;
+   }
 
 
     

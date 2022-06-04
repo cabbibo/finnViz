@@ -54,6 +54,9 @@ void Always(){
             cam.position = Vector3.left * Mathf.Sin( a ) * radius - Vector3.forward * Mathf.Cos(a) * radius;
 
             cam.LookAt( Vector3.zero );
+
+
+            
         }else{
 
             transform.rotation = Quaternion.AxisAngle( Vector3.up , .2f*Mathf.Sin(Time.time * 1) );
