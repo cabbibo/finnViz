@@ -191,9 +191,9 @@ float GetDist(float3 p) {
     float tNoise1 =    triNoise3D( float3(p.y * .01,cid*10,0) ,1 ); 
     //uv.x = abs(uv.x) -.1;
    // uv.x -= sin(cid + time * .1 *(sin( cid * 100 ) + 3))*(tNoise1 * 3-2) + sin(  p.y*(2+sin(float(b) *20)) * .6  +(float(b)*100) + time ) - sin(float(b) * 202)*2 - .5;// (sin(float(b)+1.3) * .5 + float(b) * 10) * (sin(float(b) + 131) + time) *4 -.5;
-    uv.x -= sin(time * .2  + cid ) *(noise(p.y  * (.04 * (cid+4)) + cid*100 + time * .1*10)  * 2 -1);//
-    uv.x -= sin(time * .1  + cid ) *(noise(p.y  * (.2 * (cid+4)) + cid*100 + time * .1 *10)  * .3 -.1);//
-    uv.x -= sin(time * .3  + cid ) *(noise(p.y  * (.03 * (cid+4)) + cid*100 + time * .1*10)  * 8 -5);//
+    uv.x -= sin(time * .2  + cid ) *(noise(p.y  * (.04 * (cid+4)) + cid*100 + time * .1)  * 2 -1);//
+    uv.x -= sin(time * .1  + cid ) *(noise(p.y  * (.2 * (cid+4)) + cid*100 + time * .1)  * .3 -.1);//
+    uv.x -= sin(time * .3  + cid ) *(noise(p.y  * (.03 * (cid+4)) + cid*100 + time * .1)  * 8 -5);//
 
     uv.x += 1.5;
 
@@ -208,7 +208,7 @@ float GetDist(float3 p) {
         float fn =  float(i);
 
         uv -= m * q;
-        th += 0.5 * p.y *   (sin(time*.3+fn+20) + 1.1) + ( ( .5 + .3) * time);
+        th += 0.5 * p.y *   (sin(time*.1+fn+20) + 1.1) + ( ( .5 + .3) * time);
         uv = mul(Rot(th) ,uv);
         uv.x = abs(uv.x * 1)-.1*calmness;//-.1 * 1*(sin(uv.y*4));
         m *=.05*cos(8. * length(uv)) + (sin(time * .1 + cid) * .25 * calmness + .25 * calmness + .04 );//.55;// +  0.2 * (sin(time * .1 + fn) + 1.1);// + 0.05 * cos(0.4 * p.y - 0.6 * _Time.y);
@@ -272,8 +272,8 @@ float2 logo = float2((1-s.w) * 1  -.1 ,2);
 
 logo.x = opS(  sdPlane( pos +float3(0,0,1), float3(0,0,1) ,.2),logo.x );
 logo.x = opS(  sdPlane( pos+float3(0,0,1), float3(0,0,-1) ,.2),logo.x );
-logo.x += .2;
-logo -= (triNoise3D(pos * .2 ,4)-.5) * 2  * float2(1,3);// *(sin(_Time.y*.87+440) + 1.1);
+logo.x += .3;
+logo -= (triNoise3D(pos * .2 ,1)-.5) * 2  * float2(1,3);// *(sin(_Time.y*.87+440) + 1.1);
 if( logo.x <0 ){
    // logo.x = -100;
     

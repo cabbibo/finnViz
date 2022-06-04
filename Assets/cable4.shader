@@ -359,7 +359,7 @@ float3 render( float3 ro , float3 rd ){
                 float2 uv2 = (fPos.xy * float2(1 , 16./9.)) * .2+ .5;
     uv2 = clamp(uv2,0,1);
 
-    float4 s = tex2D(_MainTex, uv2.xy );
+    float4 s = tex2Dlod(_MainTex, float4(uv2.xy,0,0) );
 
     float3 col2 = 2*s.xyz;
 

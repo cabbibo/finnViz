@@ -75,7 +75,7 @@ float3 col = float3(0,0,0);
     for( int i = 0; i < 60; i++ ){
 
         float fi = float(i);
-        float3 pos = ro + rd * fi * .001;// lerp( .004 , .001 , (1 +sin(_Time.y * .1  + 424) ) /2 ); 
+        float3 pos = ro + rd * fi * .01;// lerp( .004 , .001 , (1 +sin(_Time.y * .1  + 424) ) /2 ); 
 
    // float y = pos.y + .5;
 
@@ -95,7 +95,7 @@ float3 col = float3(0,0,0);
 
     
     if( tCol.w < .9999 ){ tCol.w=0;}else{
-        if( length(tCol) > 0 && i >0){
+        if( length(tCol) > 0 && i >58){
             col += tCol.xyz;
             break;
         }
@@ -103,7 +103,7 @@ float3 col = float3(0,0,0);
     //break;
     }
     //col += lerp(0, .1, pow((sin(_Time.y * .3) + 1) /2 ,2))*tCol.xyz * tCol.w;
-    col += .01*tCol.xyz * tCol.w;
+    col += .1*tCol.xyz * tCol.w;
 
 
         float y = pos.y + .5;// + sin(_Time.y) * .2 +.5;

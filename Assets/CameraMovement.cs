@@ -51,17 +51,21 @@ void Always(){
     void Update()
     {
         float a =  (Time.time * speed);
-        float a2 =  (Time.time * speed + 121);
-        float a3 =  (Time.time * speed + 424221);
+        float a2 =  (Time.time * speed *.93f+ 121);
+        float a3 =  (Time.time * speed * .85f+ 424221);
 
         Vector3 fPos = Vector3.zero;
 
-        fPos  = Vector3.left  *( (Mathf.PerlinNoise(a , 0)-.5f) * shake.x + offset.x);
-        fPos += Vector3.up * ( (Mathf.PerlinNoise(a2 , 0)-.5f) * shake.y + offset.y);
-        fPos += Vector3.forward *( (Mathf.PerlinNoise(a3 , 0)-.5f) * shake.z + offset.z);
+        fPos  = Vector3.left  *( Mathf.Sin(a ) * shake.x + offset.x);
+        fPos += Vector3.up * ( Mathf.Sin(a2 ) * shake.y + offset.y);
+        fPos += Vector3.forward *( Mathf.Sin(a3 )  * shake.z + offset.z);
 
         if( rotateCamera ){
             cam.position = fPos;
+            cam.LookAt( Vector3.zero );
+
+            //cam.position = Vector3.left * Mathf.Sin( Time.time * speed ) * offset.z  - Vector3.forward * Mathf.Cos( Time.time * speed ) * offset.z;
+     
             cam.LookAt( Vector3.zero );
         }else{
             
