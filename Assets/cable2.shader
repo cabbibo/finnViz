@@ -160,7 +160,7 @@ float GetDist(float3 p) {
 
     float calmness =( sin(time * .1) +1)/2;
 
-    //calmness = 1;
+    calmness = 1.2;
 
     // MAKE SURE THIS RATIO IS EXACT
     float2 uv2 = (p.xy * float2(1 , 2)) * .2+ .5;
@@ -179,7 +179,7 @@ float GetDist(float3 p) {
 
 
     // For each cable
-    for( int b = 0; b < 5; b++ ){
+    for( int b = 0; b < 10; b++ ){
     
 
     // cable id
@@ -190,6 +190,7 @@ float GetDist(float3 p) {
 
     float tNoise1 =    triNoise3D( float3(p.y * .01,cid*10,0) ,1 ); 
     //uv.x = abs(uv.x) -.1;
+    
    // uv.x -= sin(cid + time * .1 *(sin( cid * 100 ) + 3))*(tNoise1 * 3-2) + sin(  p.y*(2+sin(float(b) *20)) * .6  +(float(b)*100) + time ) - sin(float(b) * 202)*2 - .5;// (sin(float(b)+1.3) * .5 + float(b) * 10) * (sin(float(b) + 131) + time) *4 -.5;
     uv.x -= sin(time * .2  + cid ) *(noise(p.y  * (.04 * (cid+4)) + cid*100 + time * .1)  * 2 -1);//
     uv.x -= sin(time * .1  + cid ) *(noise(p.y  * (.2 * (cid+4)) + cid*100 + time * .1)  * .3 -.1);//
@@ -197,7 +198,7 @@ float GetDist(float3 p) {
 
     uv.x += 1.5;
 
-    //uv.y = abs(uv.y) - 1;
+    //uv.y = abs(uv.y) - 4;
     float2 q = float2(1,0);
     
     float th = .4 * sin(cid*20) * p.y - .6 * time;
@@ -270,10 +271,10 @@ float2 map( float3 pos ){
     float4 s = tex2Dlod(_MainTex, float4(uv2.xy,0,0) );
 float2 logo = float2((1-s.w) * 1  -.1 ,2);
 
-logo.x = opS(  sdPlane( pos +float3(0,0,1), float3(0,0,1) ,.2),logo.x );
-logo.x = opS(  sdPlane( pos+float3(0,0,1), float3(0,0,-1) ,.2),logo.x );
-logo.x += .3;
-logo -= (triNoise3D(pos * .2 ,1)-.5) * 2  * float2(1,3);// *(sin(_Time.y*.87+440) + 1.1);
+logo.x = opS(  sdPlane( pos +float3(0,0,2), float3(0,0,1) ,.5),logo.x );
+logo.x = opS(  sdPlane( pos+float3(0,0,2), float3(0,0,-1) ,.5),logo.x );
+logo.x += -.2;
+logo -= (triNoise3D(pos * .2 ,1)-.5) * 1  * float2(1,3);// *(sin(_Time.y*.87+440) + 1.1);
 if( logo.x <0 ){
    // logo.x = -100;
     
@@ -283,7 +284,7 @@ if( logo.x <0 ){
 
 //d = logo;
  d = float2(d.x,0);
- d=smoothU( float2(d.x,.1) , logo ,1.5);//min(d , 1-s.w );
+ d=smoothU( float2(d.x,.1) , logo ,.5);//min(d , 1-s.w );
 
 
 

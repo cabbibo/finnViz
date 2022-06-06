@@ -72,10 +72,10 @@ float3 render( float3 ro , float3 rd ){
 
 
 float3 col = float3(0,0,0);
-    for( int i = 0; i < 60; i++ ){
+    for( int i = 0; i < 120; i++ ){
 
         float fi = float(i);
-        float3 pos = ro + rd * fi * .01;// lerp( .004 , .001 , (1 +sin(_Time.y * .1  + 424) ) /2 ); 
+        float3 pos = ro + rd * fi * .005;// lerp( .004 , .001 , (1 +sin(_Time.y * .1  + 424) ) /2 ); 
 
    // float y = pos.y + .5;
 
@@ -139,11 +139,15 @@ float3 col = float3(0,0,0);
         col+= y * .5 * float3(1. , .4 , 0.);
         //}
     }
-    
+
 
 
     
     }
+
+    
+    col *= .5; 
+    
     return col;
 }
 

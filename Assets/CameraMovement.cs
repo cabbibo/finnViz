@@ -48,29 +48,28 @@ void Always(){
 
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
-        float a =  (Time.time * speed);
+        float a =   (Time.time * speed);
         float a2 =  (Time.time * speed *.93f+ 121);
         float a3 =  (Time.time * speed * .85f+ 424221);
 
         Vector3 fPos = Vector3.zero;
 
-        fPos  = Vector3.left  *( Mathf.Sin(a ) * shake.x + offset.x);
-        fPos += Vector3.up * ( Mathf.Sin(a2 ) * shake.y + offset.y);
-        fPos += Vector3.forward *( Mathf.Sin(a3 )  * shake.z + offset.z);
+        fPos  = Vector3.left  *(    ( Mathf.Sin(a  ) + Mathf.Sin(a  * .35f +414) )   * shake.x + offset.x);
+        fPos += Vector3.up * (      ( Mathf.Sin(a2 ) + Mathf.Sin(a2 * .39f+102) ) * shake.y + offset.y);
+        fPos += Vector3.forward *(  ( Mathf.Sin(a3 ) + Mathf.Sin(a3 * .43f+445) )  * shake.z + offset.z);
 
         if( rotateCamera ){
             cam.position = fPos;
             cam.LookAt( Vector3.zero );
 
             //cam.position = Vector3.left * Mathf.Sin( Time.time * speed ) * offset.z  - Vector3.forward * Mathf.Cos( Time.time * speed ) * offset.z;
-     
-            cam.LookAt( Vector3.zero );
+  
         }else{
             
-           // transform.rotation = Quaternion.AxisAngle( Vector3.up , .1f*Mathf.Sin(Time.time * 1) );
-           // transform.Rotate(  Vector3.left * 3.2f*Mathf.Sin(Time.time * 1 + .4f) );
+         //   transform.rotation = Quaternion.AxisAngle( Vector3.up , .1f*(Mathf.Sin(Time.time * 1.1f)+ Mathf.Sin(Time.time * .57f + 121 )) ) ;
+          //  transform.Rotate(  Vector3.left * 5.2f*(Mathf.Sin(Time.time * 1 + 44.4f) + Mathf.Sin(Time.time * .5f + 155 ) ));
 
         }
         
