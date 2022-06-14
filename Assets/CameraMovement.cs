@@ -48,11 +48,11 @@ void Always(){
 
 
     // Update is called once per frame
-    void LateUpdate()
+    void Update()
     {
         float a =   (Time.time * speed);
         float a2 =  (Time.time * speed *.93f+ 121);
-        float a3 =  (Time.time * speed * .85f+ 424221);
+        float a3 =  (Time.time * speed * .85f+ 421);
 
         Vector3 fPos = Vector3.zero;
 

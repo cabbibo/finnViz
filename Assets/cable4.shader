@@ -143,7 +143,8 @@ void pR(inout float2 p, float a) {
 // Repeat around the origin by a fixed angle.
 // For easier use, num of repetitions is use to specify the angle.
 float pModPolar(inout float2 p, float repetitions) {
-float angle = 2.*PI/repetitions;
+//float angle =( _Time.y + 2.*PI/repetitions)%PI;
+float angle =2.*PI/repetitions;
 float a = atan2(p.y, p.x) + angle/2.;
 float r = length(p);
 float c = floor(a/angle);
@@ -162,16 +163,20 @@ float sdCylinder( float3 p, float2 h )
 }
 
 float2 cable(float3 pos) {
-	const int iterations = 2;
+	const int iterations = 5;
     
-    pos *= 10;
+    pos *= 1;
+    pos *= (sin(pos.y+ _Time.y)+5)/6;
+    pos *= (sin(pos.y * .3+ _Time.y)+4)/5;
+    pos *=1;
+   // pos *= (sin( _Time.y * .5 ) +3 )/3;
 
   //  pos.x += 2*sin(pos.y * .1);
     float y = pos.y;
     //pos.z -= 0.5;
    // pos.z = abs(pos.z);
     //pos.y = (pos.y% 1.) - .5;
-    float2 dist = float2(10., 0.);
+    float2 dist = float2(1., .4);
     
     float startIterations = 4.;
     float startX = 1.;
@@ -183,60 +188,20 @@ float2 cable(float3 pos) {
     {
         float index = pModPolar(pos.xz, startIterations+adder*float(i));
 
-    	float2 size = float2(startRadius, 100.);
+    	float2 size = float2(startRadius  * 1, 100000.);
+       // pos.z -= (_Time.y*1*float(i+1) + float(i))%1;
         pos.x -= startX;
-        dist = opU(dist, float2(sdCylinder(pos.xzy, size), float(i)));
+        dist = opU(dist, float2(sdCylinder(pos.xzy, size), float(i) * .1));
         
-        startX /= 2.;
-        startRadius /=3.;
+        startX /= 1.;
+        startRadius /= 1.6;
+        startRadius = clamp( startRadius,0 + .06 * sin(_Time.y  * .3 )+ .06 * sin( _Time.y * .132) ,100);
     }
     
-    return dist/3;
+    return float2( dist.x* .1 , dist.y );
 }
 
 
-float GetDist(float3 p) {
-
-  /* float2 uv2 = (p.xy * float2(1 , 16./9.)) * .2+ .5;
-    uv2 = clamp(uv2,0,1);
-
-  //  float4 s = tex2D(_MainTex, uv2.xy );
-*/
-
-    float2 uv = p.xz;
-
-    uv.x += 2;
-    uv.y += 1;
-    
-   // uv.x = abs(uv.x) -.1;
-
-   // uv.y = abs(uv.y) + 1;
-    float time = 12. + _Time.y; // 0.3 * h21(floor(10. * uv))  //<-very cool extremely laggy
-    float2 q = float2(1,0);
-    
-    float th = .01 * p.y - 0.6 * time;
-    float n = 9.;
-    float m = -0.0 * length(uv) + 1.8;
-    for (float i = 0.; i < n; i++) { 
-        uv -= m * q;
-        th += .5 * p.y + 0.25 * time  + triNoise3D( float3(uv * .1,1) , 1 );
-        uv = mul(Rot(th) ,uv);
-        uv.x = abs(uv.x)-   .01;
-        m *= 0.3 * cos(8. * length(uv)) +  .1;// + 0.05 * cos(0.4 * p.y - 0.6 * _Time.y);
-    //    m *= triNoise3D( float3(uv.y,0,0) ,1) + 1;
-        //m += m * cos(_Time.y);
-    }
-    
-    float d = length(uv) - .1 * m;
-
-    // d -= triNoise3D( float3(uv.x,uv.y,0) ,1) * .2 ;
-
-    //d += s.w * .1;
-    
-    //float d = length(uv)- 0.5;
-    
-    return .3  * d;
-}
 
 float2 smoothU( float2 d1, float2 d2, float k)
 {
@@ -266,32 +231,13 @@ float2 map( float3 pos ){
  float2 d = float2(100000,-1000);
 
  d = cable(pos);//GetDist(pos);
- //d.y = 1;
-    float2 uv2 = (ogPos.yx * float2(1 , 16./9.)) * .2+ .5;
-    uv2 = clamp(uv2,0,1);
 
-  /*  float4 s = tex2D(_MainTex, uv2.xy );
-float2 logo = float2((1-s.w) -.5 + clamp(abs(pos.z)-.1,0,10)  ,2);
- d = smoothU( float2(d.x,1) , logo , .7 + (1-abs(pos.y * .2)));//min(d , 1-s.w );
-*/
+//d.x += .001;
+ ///d -= triNoise3D( pos * 1 ,4 ) * ( .03 + sin(_Time.y * .1)* .03 );
 
 
-    float3 p = pos;
-        //p.yz = ((p.yz+1)%2)-1; 
 
-for( int i =0; i < 4; i++ ){
-
-
-   // p = abs(p);
-
-//p = mul( xrotate(p.x) , pos );
-}
-
-
-      //  d = min(d,sdCylinderZ( p , float3(0,0,.1)));
-
-   // d +=  triNoise3D( pos * .1 ,1) * 1 * (1/(.1+10*abs(pos.y)))-.3;
-    return d;//float2(d , 12);// float2(length(pos)-20,2);
+    return float2( d.x * 5 , d.y );//float2(d , 12);// float2(length(pos)-20,2);
 }
 
 
@@ -302,14 +248,14 @@ for( int i =0; i < 4; i++ ){
 float2 calcIntersection( float3 ro ,  float3 rd ){     
             
                
-    float h =  .0001  * 2;
+    float h =  .001  * 2;
     float t = 0.0;
     float res = -1.0;
     float id = -1.0;
 
-    for( int i = 0; i< 40; i++ ){
+    for( int i = 0; i< 200; i++ ){
         
-        if( h < .0001 || t >10) break;
+        if( h < .001 || t >200) break;
 
         float3 pos = ro + rd*t;
         float2 m = map( pos );
@@ -321,8 +267,8 @@ float2 calcIntersection( float3 ro ,  float3 rd ){
     }
 
 
-    if( t <  10 ){ res = t; }
-    if( t >  10){ id = -1.0; }
+    if( t <  200 ){ res = t; }
+    if( t >  200){ id = -1.0; }
 
     return float2( res , id );
   
@@ -340,6 +286,13 @@ float3 calcNormal( in float3 pos ){
 
       }
         
+float3 hsv(float h, float s, float v)
+{
+  return lerp( float3( 1.0 , 1, 1 ) , clamp( ( abs( frac(
+    h + float3( 3.0, 2.0, 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ), 0.0, 1.0 ), s ) * v;
+}
+
+
 
 float3 render( float3 ro , float3 rd ){
 
@@ -350,20 +303,18 @@ float3 render( float3 ro , float3 rd ){
         float3 fPos = ro + rd * res.x;
 
         float3 nor = calcNormal(fPos);
+
+        
         float3 refl = reflect( rd , nor );
         col = texCUBE(_CubeMap,normalize(refl));
-        col *= 2.3; 
-        col *= 1-dot( -rd, nor);
 
+        //col *= nor * .5 + .5;
+       /// col *= 2.3; 
+       // col *= 1-dot( -rd, nor);
 
-                float2 uv2 = (fPos.xy * float2(1 , 16./9.)) * .2+ .5;
-    uv2 = clamp(uv2,0,1);
+        col *=2* hsv( res.y * (2 + sin(_Time.y)) + _Time.y * .4,1,res.y*1+.3) / (.5 + res.x * .04);
 
-    float4 s = tex2Dlod(_MainTex, float4(uv2.xy,0,0) );
-
-    float3 col2 = 2*s.xyz;
-
-    col = lerp( col , col2 , pow(res.y-1,2));
+        col = saturate( col /2) * 2;
         //col = calcNormal( fPos ) * .5 + .5;
     }
     //col = 1;

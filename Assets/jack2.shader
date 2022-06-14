@@ -217,6 +217,15 @@ float opOnion( in float sdf, in float thickness )
     return abs(sdf)-thickness;
 }
 
+float2 smoothU( float d1, float d2, float k)
+{
+    float a = d1;
+    float b = d2;
+    float h = clamp(0.5+0.5*(b-a)/k, 0.0, 1.0);
+    return ( lerp(b, a, h) - k*h*(1.0-h));
+}
+
+
 float3 hsv(float h, float s, float v)
 {
   return lerp( float3( 1.0 , 1, 1 ) , clamp( ( abs( frac(
@@ -224,18 +233,55 @@ float3 hsv(float h, float s, float v)
 }
 
 
+
+// Rotation matrix around the X axis.
+float3x3 rotateX(float theta) {
+    float c = cos(theta);
+    float s = sin(theta);
+    return float3x3(
+        float3(1, 0, 0),
+        float3(0, c, -s),
+        float3(0, s, c)
+    );
+}
+
+// Rotation float3xrix around the Y axis.
+float3x3 rotateY(float theta) {
+    float c = cos(theta);
+    float s = sin(theta);
+    return float3x3(
+        float3(c, 0, s),
+        float3(0, 1, 0),
+        float3(-s, 0, c)
+    );
+}
+
+// Rotation float3xrix around the Z axis.
+float3x3 rotateZ(float theta) {
+    float c = cos(theta);
+    float s = sin(theta);
+    return float3x3(
+        float3(c, -s, 0),
+        float3(s, c, 0),
+        float3(0, 0, 1)
+    );
+}
+
+
+
+
 float map(float3 p) 
 {
 
       //  float d1 = (length(p)-.6);
     float d1 = 10000;
-        for( int i = 0; i < 7; i++ ){
+        for( int i = 0; i < 12; i++ ){
             float fi = float(i+1212);
 
-            float radius = .4;//(sin( _Time.y * sin(fi) + fi) +3) *1.3;
+            float radius = .5;//(sin( _Time.y * sin(fi) + fi) +3) *1.3;
             float3 offset = float3(
-               sin( _Time.y * sin(fi+424) + fi+242) * .3,
-               sin( _Time.y * sin(fi+42) + fi+2466) * .2,
+               sin( _Time.y * sin(fi+424) + fi+242) * .8,
+               sin( _Time.y * sin(fi+42) + fi+2466) * .5,
                sin( _Time.y * sin(fi+24) + fi+542) * .1
             );
 
@@ -259,13 +305,13 @@ float map2(float3 p)
 {
 
         float d1 = 10000;
-        for( int i = 0; i < 40; i++ ){
+        for( int i = 0; i < 80; i++ ){
             float fi = float(i);
 
             float radius = (sin( _Time.y * sin(fi) + fi) +3) * .05;
             float3 offset = float3(
-               sin( _Time.y * sin(fi+424) + fi+242) * .6,
-               sin( _Time.y * sin(fi+42) + fi+2466) * .4,
+               sin( _Time.y * sin(fi+424) + fi+242) * 1,
+               sin( _Time.y * sin(fi+42) + fi+2466) * .8,
                sin( _Time.y * sin(fi+24) + fi+542) * .1
             );
 
@@ -315,51 +361,91 @@ float map3(float3 p)
 }
 
 
+float doL( float3 p ){
+
+    float3 v = 10000;
+      v = min(v,sdBox( p , float3(.03,.3,.2)));
+    v = min(v,sdBox( p - float3(-.4,-.15,0) , float3(.4,.15,.2)));
+
+    return v;
+}
+
 float doLogo( float3 p ){
 
     float v = 100000;
 
 
-    float me = (cycleTime - .9) *(1/.1);
+    float me = clamp( (cycleTime - .8) *(1/.1) + sin(_Time.y * .23) * .2  , 0 , 1.2);
+      float solidVal = (sin(_Time.y * .2) + 1 )/2;
 
-    p *= 3;
-    p.x = abs(p.x);
-    //p.x = abs(p.x+.4);
-    float3 tp = p - float3(1*me + .06 * sin(_Time.y * .37 ) + .04 * sin(_Time.y * .27 )   ,0,0);
+         solidVal =  solidVal * solidVal * (3.0 - 2.0 * solidVal);
+//solidVal = 1;
+    for( int i = 0; i < 2; i++ ){
 
-    //tp.x = abs(tp.x);
-    v = min(v,sdBox( tp , float3(.03,.3,.3)));
-    v = min(v,sdBox( tp - float3(-.4,-.15,0) , float3(.4,.15,.3)));
+        float fi = float(i);
+        if( i == 1 ){
+            p.x = -p.x;
+        }
+        
+        float3 tp = p;
+        float3 tpRandom = p;
+
+        float s1 = 1;
+        
+        tp -= 1 * float3(1,0,0);
+        tp *= .95;
+        tpRandom *= (1 + me);
+
+             float3 offset = float3(
+               sin( _Time.y * .2 * sin(fi+424) + fi+242) * .5,
+               sin( _Time.y * .2* sin(fi+42) + fi+2466) * 2,
+               sin( _Time.y * .2 * sin(fi+24) + fi+542) * 0
+            );
+
+            tpRandom += -offset * .5;
 
 
-float n = (noise(p * 5+ float3(0,0,-_Time.y))-.5) * .3  * cycleTime * (sin(_Time.y*.39)+1.2);
-      n += (noise(p * 10+ float3(0,0,-2*_Time.y))-.5) * .15  * cycleTime * (sin(_Time.y * .59)+1.2);
+        
+
+        tpRandom = tpRandom - 2*float3(1*me + .06 * sin(_Time.y * .37 ) + .04 * sin(_Time.y * .27 )   ,0,0);
+
+        float3x3 ro = rotateY( sin( _Time.y * .8 *(fi +2) + fi ) * .1  );
+        float3x3 ro2 = rotateZ( sin( _Time.y * .2 *(fi +2) + fi *313 + 31313) * .8 );
+
+        tpRandom = mul(ro,mul(ro2,tpRandom * (2 + sin(_Time.y * .1 + fi) )  /2));
+
+   
+        
+       // solidVal = 1;
+         ro2 = rotateZ( sin( _Time.y * 11111.2 *(fi +2) + fi *313 + 31313) * .01  * pow( solidVal,10));       
+        tp =mul(ro2,tp * ( 1- (sin(_Time.y * 121212 + fi * 212) * .01* pow( solidVal,10))));
+
+    
+        
+        float3 fPos = lerp( tpRandom , tp , solidVal);
+    
+        v = smin(v,doL(fPos * (1.1/me)) , 1000);
+
+       
 
 
-    float notMax = 1-cycleTime;
+
+
+    }
+// v*= 4;
+
+        float n = (noise(p * 15+ float3(0,0,-_Time.y))-.5) * .3  * me * (sin(_Time.y*.39)+1.2);
+      n += (noise(p * 30+ float3(0,0,-2*_Time.y))-.5) * .15  * me * (sin(_Time.y * .59)+1.2);
+
+n *= .5;
+    //n = 0;
+    float notMax = 1-me;
     notMax *= 10;
 
-      v += n * (cycleTime) * saturate(sin( _Time.y * .21) + .5) + n * notMax;
-
-
+     v += (1-solidVal) * ( n * (me) * saturate(sin( _Time.y * .21) + .5) + n * notMax);
     return v;
 }
 
-float doLogoLong( float3 p ){
-
-    float v = 100000;
-
-    p *= 3;
-    p.x = abs(p.x);
-    //p.x = abs(p.x+.4);
-    float3 tp = p - float3(.85,0,0);
-
-    //tp.x = abs(tp.x);
-    v = min(v,sdBox( tp , float3(.03,.3,2.3)));
-    v = min(v,sdBox( tp - float3(-.4,-.15,0) , float3(.4,.15,1.3)));
-
-    return v;
-}
 
 
 float3 getColor( float3 fPos ){
@@ -387,54 +473,70 @@ float3 color = 0;
     }
     if( inside < 0 ){
 
-        float outL = logo - triNoise3D(fPos*1,1)*.2;
+        float outL = logo;
         float m2 = map2(fPos);
-        m2 = opOnion(m2,.01);
+
+    float m2Temp = m2;
+       m2 = smin( outL , m2 * .4 , 20 );
+       float m3 = min( outL , m2Temp * .1 );
+
+
+    float delta = abs(m3 - m2);
+
+        m2 = opOnion(m2,.002);
 
         float tm = m2;
 
-        m2 = smin(m2, opOnion(outL,.1) * 10 , 1);
+     //m2 = smin(m2 * .4, opOnion(outL,.1) , .1);
         float d =  max( tm , -outL);
 
         float d2 = m2 - d; 
 
-
+    //color += delta * .1;
         
-        m2 = max( m2 , -(doLogo(fPos)) );
+       // m2 = max( m2 , -(doLogo(fPos)) );
 
 
         if( m2 < 0 ){
-            color += .1 *float3(-d2 * 0,d2 * 1+ .4,0);//float3(.05,.02,0);
+            color +=  .04*float3(0,1,0);//float3(.05,.02,0);
         }
-
     }
 
     m = doLogo( fPos );
 
     if( m < 0 ){
-       color += .1*float3(1.3,1.,0.);
+       color += .1*float3(1.5,.4,0.);
     }
 
     return color;
 }
 float3 render( float3 ro , float3 rd ){
 
-    cycleTime = _Time.y * .01 % 3;
+    cycleTime = 1*(_Time.y / 600) % 1;
+
+    cycleTime = cycleTime * cycleTime * (3.0 - 2.0 * cycleTime);
+
+    if( cycleTime > 1 ){ cycleTime = 1; }
+
+/*
+
     if( cycleTime > 1 && cycleTime < 2 ){
         cycleTime = 1;
     }else if( cycleTime >= 2 ){
         cycleTime = pow( 3- cycleTime,.5);
-    }
+    }*/
 
-//cycleTime = 1;
+    //cycleTime = cycleTime * cycleTime * cycleTime
+
+cycleTime = 1;
 
 float3 color = float3(.1,0,.3);
 
-for( int i = 0; i< 100; i ++ ){
+for( int i = 0; i< 50; i ++ ){
     float fi = float(i);
 
     fi += (hash(ro.x +_Time.y) + hash(ro.y + _Time.y * 1.3))/2;//(hash(ro.x * 10000) + hash(ro.y*10000))/2;
-    float3 fPos = ro + fi * .01 * rd;
+    float3 fPos = ro + fi * .015 * rd;
 
 //fPos += 100;
   //  fPos = (fPos % 2)-1;
@@ -473,12 +575,12 @@ if( c.x < .8 ){
 
 
 
-    float d = abs(fPos.z- saturate( sin(_Time.y *.1 ) * .6 + sin( _Time.y * .17 ) * .7)  );
+    float d = abs(fPos.z- pow( saturate( sin(_Time.y *.1 ) * .6 + sin( _Time.y * .17 ) * .7),2)   );
 
     float Radius = 0;
 
     if( d > .1){
-        Radius = clamp((d-.1) * .1 , 0, .3);
+        Radius = clamp((d-.1) * .1 , 0, .05);
     }
 
 
@@ -486,19 +588,20 @@ if( c.x < .8 ){
 
 
 
+
             float a = 3.14159;
             float r = 0;
 
-            a = 3.14159;
+          /*  a = 3.14159;
             r = 1 * Radius; 
 			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*r);		
 			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*-r);		
             
-            a = 3.14159/5;
+            a = 3.14159/2;
             r = 1 * Radius; 
 			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*r);		
-			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*-r);		
-
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*-r);		*/
+/*
             a = 3.14159*2/5;
             r = 1 * Radius; 
 			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*r);		
@@ -514,7 +617,7 @@ if( c.x < .8 ){
             a = 3.14159*4/5;
             r = 1 * Radius; 
 			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*r);		
-			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*-r);		
+			ave +=  getColor(fPos+float3(cos(a),sin(a),0)*-r);		*/
 
 
 
@@ -523,7 +626,7 @@ if( c.x < .8 ){
 
    //color /= 2;//Directions * Quality;
 
-   ave /= 11;
+   //ave /= 11;
    color += ave; 
 }
 

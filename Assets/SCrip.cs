@@ -59,7 +59,7 @@ void Always(){
             
         }else{
 
-            transform.rotation = Quaternion.AxisAngle( Vector3.up , .2f*Mathf.Sin(Time.time * 1) );
+            transform.rotation = Quaternion.AxisAngle( Vector3.up , .1f*Mathf.Sin(Time.time * 1.5f) );
         }
     }
 }
